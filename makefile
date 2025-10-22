@@ -61,7 +61,7 @@ checkCompilerExistance: checkArgs
 # this builds the program after checking the existance of the clang or gcc compiler existance.
 yuki: checkCompilerExistance banner
 	@echo "\e[0;35mmake: Info: Trying to build Yuki..\e[0;37m"
-	@$(CC) $(CFLAGS) -I$(INCLUDE) $(SRCS) $(TARGET) -o $(OUTPUT_DIR)/mitsuha-yuki 2>./$(BUILD_LOGFILE) || { \
+	@$(CC) $(CFLAGS) -I$(INCLUDE) $(SRCS) $(TARGET) -o $(OUTPUT_DIR)/hoshiko-yuki 2>./$(BUILD_LOGFILE) || { \
 		printf "\033[0;31mmake: Error: Build failure, check the logs for information. File can be found at $(BUILD_LOGFILE)\033[0m\n"; \
 		exit 1; \
 	}
@@ -70,7 +70,7 @@ yuki: checkCompilerExistance banner
 # this builds the program after checking dependencies, this is for managing the daemon.
 alya: checkCompilerExistance banner
 	@echo "\e[0;35mmake: Info: Trying to build Alya..\e[0;37m"
-	@$(CC) $(CFLAGS) -I$(INCLUDE) $(SRCS) ./hoshiko-cli/src/alya/main.c -o $(OUTPUT_DIR)/mitsuha-alya 2>./$(BUILD_LOGFILE) || { \
+	@$(CC) $(CFLAGS) -I$(INCLUDE) $(SRCS) ./hoshiko-cli/src/alya/main.c -o $(OUTPUT_DIR)/hoshiko-alya 2>./$(BUILD_LOGFILE) || { \
 		printf "\033[0;31mmake: Error: Build failure, check the logs for information. File can be found at $(BUILD_LOGFILE)\033[0m\n"; \
 		exit 1; \
 	}
@@ -103,7 +103,7 @@ help:
 
 # removes the stuff made by compiler and makefile.
 clean:
-	@rm -f $(BUILD_LOGFILE) $(OUTPUT_DIR)/mitsuha-yuki $(OUTPUT_DIR)/mitsuha-alya
+	@rm -f $(BUILD_LOGFILE) $(OUTPUT_DIR)/hoshiko-yuki $(OUTPUT_DIR)/hoshiko-alya
 	@echo "\033[0;32mmake: Info: Clean complete.\033[0m"
 
 .PHONY: yuki alya clean checkArgs checkCompilerExistance banner all

@@ -13,13 +13,13 @@ class MainActivity : ComponentActivity() {
         return true;
     }
     fun packageToAdd(packageName: String): Boolean {
-        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/remalwack-alya", "--add-app", packageName));
+        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--add-app", packageName));
         alyaHandler.waitFor();
         if(alyaHandler.exitValue() != 0) return false;
         return true;
     }
     fun packageToRemove(packageName: String): Boolean {
-        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/remalwack-alya", "--remove-app", packageName));
+        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--remove-app", packageName));
         alyaHandler.waitFor();
         if(alyaHandler.exitValue() != 0) return false;
         return true;
@@ -27,14 +27,14 @@ class MainActivity : ComponentActivity() {
     fun manageDaemon(enableDaemon: Boolean): Boolean {
         var argument = "--enable-daemon";
         if(!enableDaemon) argument = "--disable-daemon";
-        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/remalwack-alya", argument));
+        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", argument));
         alyaHandler.waitFor();
         if(alyaHandler.exitValue() != 0) return false;
         return true;
     }
     fun startDaemonDetached() {
         try {
-            Runtime.getRuntime().exec(arrayOf("su", "-c", "nohup", "/data/adb/Re-Malwack/remalwack-yuki", "&"));
+            Runtime.getRuntime().exec(arrayOf("su", "-c", "nohup", "/data/adb/Re-Malwack/hoshiko-yuki", "&"));
         }
         catch(e: Exception) {
             e.printStackTrace();
@@ -57,16 +57,16 @@ class MainActivity : ComponentActivity() {
                 .show();
         }
         // by default, disable the daemon and let the user start it again.
-        Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/remalwack-alya", "--kill-daemon", "--lana-app"));
+        Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--kill-daemon", "--lana-app"));
         daemonToggle.isChecked = false;
         importButton.setOnClickListener {
-            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/remalwack-alya", "--import-package-list", "/sdcard/export-alya.txt", "--lana-app"));
+            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--import-package-list", "/sdcard/export-alya.txt", "--lana-app"));
             proc.waitFor();
             if(proc.exitValue() != 0) Toast.makeText(this, getString(R.string.failedtoimportpackagelist), Toast.LENGTH_SHORT).show();
             else Toast.makeText(this, getString(R.string.importedpackagelistsuccessfully), Toast.LENGTH_SHORT).show();
         }
         exportButton.setOnClickListener {
-            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/remalwack-alya", "--export-package-list", "/sdcard/export-alya.txt", "--lana-app"));
+            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--export-package-list", "/sdcard/export-alya.txt", "--lana-app"));
             proc.waitFor();
             if(proc.exitValue() != 0) Toast.makeText(this, getString(R.string.failedtoexportpackagelist), Toast.LENGTH_SHORT).show();
             else Toast.makeText(this, getString(R.string.exportedpackagelistsuccessfully), Toast.LENGTH_SHORT).show();
@@ -111,7 +111,7 @@ class MainActivity : ComponentActivity() {
                 if(manageDaemon(false)) {
                     buttonView.isChecked = false;
                     Toast.makeText(this, this.getString(R.string.stoppedyukisuccessfully), Toast.LENGTH_SHORT).show();
-                    Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/remalwack-alya", "--kill-daemon", "--lana-app"));
+                    Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--kill-daemon", "--lana-app"));
                 }
                 else {
                     buttonView.isChecked = true;
