@@ -1,6 +1,6 @@
-# Hoshiko
-
 ![Hoshiko Banner](https://github.com/ayumi-aiko/banners/blob/main/hoshiko.banner.png?raw=true)
+
+# Hoshiko
 
 **Hoshiko** is an application designed to **block ads** in specific Android apps.
 It acts as a **user interface add-on** for [Re-Malwack](https://github.com/ZG089/Re-Malwack), providing a more convenient way to control app-level ad blocking.
