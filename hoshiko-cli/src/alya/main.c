@@ -70,7 +70,10 @@ int main(int argc, char *argv[]) {
                 useStdoutForAllLogs = false;
             break;
             case 'a':
-                if(isPackageInList(optarg)) consoleLog(LOG_LEVEL_INFO, "main-alya", "Existing package can't be added once again!");
+                if(isPackageInList(optarg)) {
+                    consoleLog(LOG_LEVEL_INFO, "main-alya", "Existing package can't be added once again!");
+                    return -1;
+                }
                 else addPackageToList(optarg);
                 return 0;
             break;
@@ -78,12 +81,19 @@ int main(int argc, char *argv[]) {
                 if(isPackageInList(optarg)) {
                     removePackageFromList(optarg);
                     consoleLog(LOG_LEVEL_INFO, "main-alya", "Requested package has been removed successfully!");
+                    return 0;
                 }
-                else abort_instance("main-alya", "%s is not found in the list.", optarg);
+                else {
+                    consoleLog(LOG_LEVEL_ERROR, "main-alya", "%s is not found in the list.", optarg);
+                    return -1;
+                }
             break;
             case 'i':
                 eraseFile(daemonLockFileStuck);
-                if(access(optarg, F_OK) != 0) abort_instance("main-alya", "Failed to access the given import package lists file.");
+                if(access(optarg, F_OK) != 0) {
+                    consoleLog(LOG_LEVEL_ERROR, "main-alya", "Failed to access the given import package lists file.");
+                    return -1;
+                }
                 if(copyTextFile(optarg, daemonPackageLists)) {
                     eraseFile(daemonLockFileSuccess);
                     remove(daemonLockFileStuck);
@@ -92,7 +102,8 @@ int main(int argc, char *argv[]) {
                 }
                 else {
                     eraseFile(daemonLockFileFailure);
-                    abort_instance("main-alya", "Failed to import the package list. Please try again!");
+                    consoleLog(LOG_LEVEL_ERROR, "main-alya", "Failed to import the package list. Please try again!");
+                    return -1;
                 }
             break;
             case 'e':
@@ -101,7 +112,10 @@ int main(int argc, char *argv[]) {
                     consoleLog(LOG_LEVEL_INFO, "main-alya", "Successfully copied the file to the requested location. Thank you for using Hoshiko!");
                     return 0;
                 }
-                else abort_instance("main-alya", "Failed to copy the file to the requested location. Please try again!");
+                else {
+                    consoleLog(LOG_LEVEL_ERROR, "main-alya", "Failed to copy the file to the requested location. Please try again!");
+                    return -1;
+                }
             break;
             case 'x':
                 if(putConfig("enable_daemon", ENABLE_ENABLED) != 0) abort_instance("main-alya", "Failed to enable the daemon, please try again!");

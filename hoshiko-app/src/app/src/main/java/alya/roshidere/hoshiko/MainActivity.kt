@@ -13,13 +13,13 @@ class MainActivity : ComponentActivity() {
         return true;
     }
     fun packageToAdd(packageName: String): Boolean {
-        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--add-app", packageName));
+        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--lana-app", "--add-app", packageName));
         alyaHandler.waitFor();
         if(alyaHandler.exitValue() != 0) return false;
         return true;
     }
     fun packageToRemove(packageName: String): Boolean {
-        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--remove-app", packageName));
+        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--lana-app", "--remove-app", packageName));
         alyaHandler.waitFor();
         if(alyaHandler.exitValue() != 0) return false;
         return true;
@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
     fun manageDaemon(enableDaemon: Boolean): Boolean {
         var argument = "--enable-daemon";
         if(!enableDaemon) argument = "--disable-daemon";
-        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", argument));
+        val alyaHandler = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--lana-app", argument));
         alyaHandler.waitFor();
         if(alyaHandler.exitValue() != 0) return false;
         return true;
@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
             Runtime.getRuntime().exec(arrayOf("su", "-c", "nohup", "/data/adb/Re-Malwack/hoshiko-yuki", "&"));
         }
         catch(e: Exception) {
-            e.printStackTrace();
+            Toast.makeText(this, "Exception: $e", Toast.LENGTH_SHORT).show();
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,16 +57,16 @@ class MainActivity : ComponentActivity() {
                 .show();
         }
         // by default, disable the daemon and let the user start it again.
-        Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--kill-daemon", "--lana-app"));
+        Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--lana-app", "--kill-daemon"));
         daemonToggle.isChecked = false;
         importButton.setOnClickListener {
-            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--import-package-list", "/sdcard/export-alya.txt", "--lana-app"));
+            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--lana-app", "--import-package-list", "/sdcard/export-alya.txt"));
             proc.waitFor();
             if(proc.exitValue() != 0) Toast.makeText(this, getString(R.string.failedtoimportpackagelist), Toast.LENGTH_SHORT).show();
             else Toast.makeText(this, getString(R.string.importedpackagelistsuccessfully), Toast.LENGTH_SHORT).show();
         }
         exportButton.setOnClickListener {
-            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--export-package-list", "/sdcard/export-alya.txt", "--lana-app"));
+            val proc = Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--lana-app", "--export-package-list", "/sdcard/export-alya.txt"));
             proc.waitFor();
             if(proc.exitValue() != 0) Toast.makeText(this, getString(R.string.failedtoexportpackagelist), Toast.LENGTH_SHORT).show();
             else Toast.makeText(this, getString(R.string.exportedpackagelistsuccessfully), Toast.LENGTH_SHORT).show();
@@ -74,26 +74,34 @@ class MainActivity : ComponentActivity() {
         appPackageToAdd.setOnEditorActionListener { _, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_DONE || (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
                 val input = appPackageToAdd.text?.toString()?.trim();
-                if(!input.isNullOrEmpty()) if(packageToAdd(input)) {
-                    Toast.makeText(this, getString(R.string.addedgivenpackage), Toast.LENGTH_SHORT).show();
-                    true;
+                if(!input.isNullOrEmpty()) {
+                    return@setOnEditorActionListener if(packageToAdd(input)) {
+                        Toast.makeText(this, getString(R.string.addedgivenpackage), Toast.LENGTH_SHORT).show();
+                        true;
+                    }
+                    else {
+                        Toast.makeText(this, getString(R.string.failedtoaddgivenpackage), Toast.LENGTH_SHORT).show();
+                        false;
+                    }
                 }
-                else Toast.makeText(this, getString(R.string.failedtoaddgivenpackage), Toast.LENGTH_SHORT).show();
-                false;
             }
-            else false;
+            false;
         }
         appPackageToRemove.setOnEditorActionListener { _, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_DONE || (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
                 val input = appPackageToRemove.text?.toString()?.trim();
-                if(!input.isNullOrEmpty()) if(packageToRemove(input)) {
-                    Toast.makeText(this, getString(R.string.removedgivenpackage), Toast.LENGTH_SHORT).show();
-                    true;
+                if(!input.isNullOrEmpty()) {
+                    return@setOnEditorActionListener if(packageToRemove(input)) {
+                        Toast.makeText(this, getString(R.string.removedgivenpackage), Toast.LENGTH_SHORT).show();
+                        true;
+                    }
+                    else {
+                        Toast.makeText(this, getString(R.string.failedtoremovegivenpackage), Toast.LENGTH_SHORT).show();
+                        false;
+                    }
                 }
-                else Toast.makeText(this, getString(R.string.failedtoremovegivenpackage), Toast.LENGTH_SHORT).show();
-                false;
             }
-            else false;
+            false;
         }
         daemonToggle.setOnCheckedChangeListener { buttonView, isChecked ->
             if(isChecked) {
@@ -111,7 +119,7 @@ class MainActivity : ComponentActivity() {
                 if(manageDaemon(false)) {
                     buttonView.isChecked = false;
                     Toast.makeText(this, this.getString(R.string.stoppedyukisuccessfully), Toast.LENGTH_SHORT).show();
-                    Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--kill-daemon", "--lana-app"));
+                    Runtime.getRuntime().exec(arrayOf("su", "-c", "/data/adb/Re-Malwack/hoshiko-alya", "--lana-app", "--kill-daemon"));
                 }
                 else {
                     buttonView.isChecked = true;

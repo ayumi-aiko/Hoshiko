@@ -21,7 +21,7 @@ CFLAGS = -std=c23 -O3 -static
 INCLUDE = ./hoshiko-cli/src/include
 SRCS = ./hoshiko-cli/src/include/daemon.c
 TARGET = ./hoshiko-cli/src/yuki/main.c
-BUILD_LOGFILE = ./hoshiko-cli/build/logs/logs
+BUILD_LOGFILE = ./hoshiko-cli/build/logs
 OUTPUT_DIR = ./hoshiko-cli/build/
 
 # Avoid SDK/ARCH checks for 'clean'
