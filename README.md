@@ -1,4 +1,4 @@
-![Hoshiko Banner](https://github.com/ayumi-aiko/banners/blob/main/hoshiko.banner.png?raw=true)
+![Hoshiko Banner](https://github.com/bocchi-the-dev/banners/blob/main/hoshiko.banner.png?raw=true)
 
 # Hoshiko
 
