@@ -52,19 +52,20 @@ int main(int argc, char *argv[]) {
     // termux should't handle the loop and it can't run some basic commands, that's why im stopping termux users.
     if(getCurrentPackage() != NULL && strcmp(getCurrentPackage(), "com.termux") == 0) {
         consoleLog(LOG_LEVEL_WARN, "main-yuki", "Sorry dear termux user, you CANNOT run this daemon in termux. Termux is not supported by Re-Malwack Daemon.");
+        wipePointers();
         executeShellCommands("exit", (const char*[]) { "exit", "1", NULL });
     }
     // always have a backup of the daemonPackageLists because we need to have to use this
-    // backup as a failsafe method when the crp didn't import properly.
+    // backup as a failsafe method when the crap didn't import properly.
     if(executeShellCommands("su", (const char*[]) {"su", "-c", "cp", "-af", daemonPackageLists, "/data/adb/Re-Malwack/previousDaemonList", NULL}) != 0) abort_instance("main-yuki", "Failed to backup the daemon package lists, please try again!");
     consoleLog(LOG_LEVEL_INFO, "main-yuki", "Reading encoded package list...");
     FILE *packageLists = fopen(daemonPackageLists, "rb");
     if(!packageLists) abort_instance("main-yuki", "Failed to open package list file.");
     int i = 0;
-    char packageArray[MAX_PACKAGES][PACKAGE_NAME_SIZE];
+    char packageArray[MAX_PACKAGES][PACKAGE_NAME_SIZE] = {0};
     char stringsToFetch[PACKAGE_NAME_SIZE];
     while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) && i < MAX_PACKAGES) {
-        if(strcspn(stringsToFetch, "\n") == 0) continue;
+        if(stringsToFetch[0] == '\0') continue;
         stringsToFetch[strcspn(stringsToFetch, "\n")] = 0;
         strncpy(packageArray[i], stringsToFetch, PACKAGE_NAME_SIZE - 1);
         packageArray[i][PACKAGE_NAME_SIZE - 1] = '\0';
@@ -79,7 +80,6 @@ int main(int argc, char *argv[]) {
         // set signal actions.
         signal(SIGINT, killDaemonWhenSignaled);
         signal(SIGTERM, killDaemonWhenSignaled);
-        signal(SIGKILL, killDaemonWhenSignaled);
         signal(SIGPWR, killDaemonWhenSignaled);
         // set the prop to 0 to indicate that we are running already.
         putConfig("is_daemon_running", 0);
@@ -142,5 +142,6 @@ int main(int argc, char *argv[]) {
             exit(EXIT_SUCCESS);
         }
     }
+    wipePointers();
     return 0;
 }

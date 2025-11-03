@@ -138,9 +138,9 @@ bool executeShellCommands(const char *command, const char *args[]) {
             wait(&status);
             return (WIFEXITED(status)) ? WEXITSTATUS(status) : false;
     }
-    // me: sybau compiler
+    // me: shut up compiler
     // evil gurt: yo
-    // me: sybau
+    // me: shut up
     return false;
 }
 
@@ -162,7 +162,13 @@ bool isDefaultHosts(const char *filename) {
 bool canDaemonRun(void) {
     char *enableDaemon = grepProp("enable_daemon", configScriptPath);
     char *isDaemonRunning = grepProp("is_daemon_running", configScriptPath);
-    if(enableDaemon && isDaemonRunning && strcmp(enableDaemon, "0") + strcmp(isDaemonRunning, "1") == 0) return true;
+    if(enableDaemon && isDaemonRunning && strcmp(enableDaemon, "0") == 0 && strcmp(isDaemonRunning, "1") == 0) {
+        freePointer((void **)&enableDaemon);
+        freePointer((void **)&isDaemonRunning);
+        return true;
+    }
+    freePointer((void **)&enableDaemon);
+    freePointer((void **)&isDaemonRunning);
     return false;
 }
 
@@ -213,7 +219,7 @@ char *grepProp(const char *variableName, const char *propFile) {
 }
 
 char *getCurrentPackage() {
-    static char packageName[100];
+    char packageName[100];
     FILE *fptr = popen("timeout 1 dumpsys 2>/dev/null | grep mFocused | awk '{print $3}' | head -n 1 | awk -F'/' '{print $1}'", "r");
     if(!fptr) abort_instance("getCurrentPackage", "Failed to fetch shell output. Are you running on Android shell?");
     while(fgets(packageName, sizeof(packageName), fptr) != NULL) {
@@ -247,18 +253,6 @@ char *combineStringsFormatted(const char *format, ...) {
         va_end(args);
         return NULL;
     }
-    return result;
-}
-
-char *modulePath(const char *Zero) {
-    char realpath_buffer[PATH_MAX];
-    if(!realpath(Zero, realpath_buffer)) abort_instance("modulePath", "Failed to get module path via argument, please try again.");
-    char *tmp = strdup(realpath_buffer);
-    if(!tmp) abort_instance("modulePath", "Failed to get module path via argument, please try again.");
-    char *dir = dirname(tmp);
-    char *result = strdup(dir);
-    free(tmp);
-    if(!result) abort_instance("modulePath", "Failed to get module path via argument, please try again.");
     return result;
 }
 
@@ -314,6 +308,8 @@ void abort_instance(const char *service, const char *format, ...) {
     va_start(args, format);
     consoleLog(LOG_LEVEL_ABORT, service, format, args);
     va_end(args);
+    freePointer((void **)&version);
+    freePointer((void **)&versionCode);
     exit(EXIT_FAILURE);
 }
 
@@ -476,7 +472,7 @@ void refreshBlockedCounts() {
 void reWriteModuleProp(const char *desk) {
     // "write" instead of "append" to rewrite everything line by line.
     // you know what? forget it, i was just being lame.
-    // so basically i hate the way i wrote the property before. it feels like crap.
+    // so basically i hate the way i wrote the property before. it felt like crap.
     FILE *moduleProp = fopen(modulePropFile, "r+");
     if(!moduleProp) abort_instance("reWriteModuleProp", "Failed to open module's property file. Please report this error in my discord!");
     char content[1024];
@@ -502,8 +498,6 @@ void checkIfModuleExists(void) {
     closedir(modulePath);
 }
 
-// ZG089's mom grabbed their phhone and told them to lock in for studies, i should too but idc if i score low marks and get
-// passed barely. I HATE THE WHOLE EDUCATION SYSTEM AND THE SOCIETY FOR ALIENATING ME AND MY THOUGHTS. I'm sorry for ZG089 :(
 void appendAlyaProps(void) {
     int appendedProps = 0;
     int defaultPropertyValues[] = {0, 1, -1};
@@ -517,4 +511,9 @@ void appendAlyaProps(void) {
     }
     if(appendedProps == 0) consoleLog(LOG_LEVEL_INFO, "appendAlyaProps", "Nothing is appended, required properties are all in place!");
     else consoleLog(LOG_LEVEL_INFO, "appendAlyaProps", "Finished appending %d properties..", appendedProps);
+}
+
+void wipePointers() {
+    freePointer((void **)&version);
+    freePointer((void **)&versionCode);
 }
