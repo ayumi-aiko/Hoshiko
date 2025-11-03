@@ -134,6 +134,7 @@ int main(int argc, char *argv[]) {
                 // call ts, dw as the function will ignore if it's resumed already.
                 else resumeADBlock();
             }
+            freePointer((void **)&currentPackage);
             // hmm, let's not fry the cpu.
             usleep(500000);
         }

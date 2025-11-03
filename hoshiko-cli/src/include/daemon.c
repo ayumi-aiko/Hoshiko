@@ -219,13 +219,13 @@ char *grepProp(const char *variableName, const char *propFile) {
 }
 
 char *getCurrentPackage() {
-    char packageName[100];
+    char packageName[100] = {0};
     FILE *fptr = popen("timeout 1 dumpsys 2>/dev/null | grep mFocused | awk '{print $3}' | head -n 1 | awk -F'/' '{print $1}'", "r");
     if(!fptr) abort_instance("getCurrentPackage", "Failed to fetch shell output. Are you running on Android shell?");
     while(fgets(packageName, sizeof(packageName), fptr) != NULL) {
         packageName[strcspn(packageName, "\n")] = 0;
         pclose(fptr);
-        return packageName;
+        return strdup(packageName);
     }
     pclose(fptr);
     return NULL;

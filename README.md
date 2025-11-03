@@ -47,10 +47,10 @@ app/build/outputs/apk/release/
 
 ### Building the CLI version
 
-Before the first build, set the `CC_ROOT` variable to your NDK root path inside the Makefile:
+Before the first build, set the `CC_ROOT` variable to your NDK root path inside the `make.sh`:
 
 ```makefile
-CC_ROOT = /path/to/android-ndk
+CC_ROOT=/path/to/android-ndk
 ```
 #### Build Arguments
 | Argument | Description                                              |
@@ -70,7 +70,7 @@ CC_ROOT = /path/to/android-ndk
 Then build using:
 
 ```bash
-make <target> SDK=28 ARCH=arm64
+./make.sh SDK=28 ARCH=arm64 <target>
 ```
 
 ---
