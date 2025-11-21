@@ -116,7 +116,7 @@ bool eraseFile(const char *file) {
     return true;
 }
 
-bool executeShellCommands(const char *command, const char *args[]) {
+bool executeShellCommands(const char *command, char *const args[]) {
     pid_t ProcessID = fork();
     switch(ProcessID) {
         case -1:
@@ -129,7 +129,7 @@ bool executeShellCommands(const char *command, const char *args[]) {
             dup2(devNull, STDOUT_FILENO);
             dup2(devNull, STDERR_FILENO);
             close(devNull);
-            execvp(command, (char *const *)args);
+            execvp(command, args);
             consoleLog(LOG_LEVEL_ERROR, "executeShellCommands", "Failed to execute command");
         break;
         default:
@@ -236,23 +236,26 @@ char *combineStringsFormatted(const char *format, ...) {
     va_start(args, format);
     va_list args_copy;
     va_copy(args_copy, args);
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
     int len = vsnprintf(NULL, 0, format, args_copy);
+    #pragma clang diagnostic pop
     va_end(args_copy);
     if(len < 0) {
         va_end(args);
         return NULL;
     }
-    char *result = malloc(len + 1);
+    size_t size = (size_t)len + 1;
+    char *result = malloc(size);
     if(!result) {
         va_end(args);
         return NULL;
     }
-    vsnprintf(result, len + 1, format, args);
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
+    vsnprintf(result, size, format, args);
+    #pragma clang diagnostic pop
     va_end(args);
-    if(!result) {
-        va_end(args);
-        return NULL;
-    }
     return result;
 }
 
@@ -296,7 +299,10 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
             else fprintf(out, "ABORT: %s: ", service);
         break;
     }
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
     vfprintf(out, message, args);
+    #pragma clang diagnostic pop
     if(!toFile) fprintf(out, "\033[0m\n");
     else fprintf(out, "\n");
     if(!useStdoutForAllLogs && out) fclose(out);
@@ -358,7 +364,9 @@ void printBannerWithRandomFontStyle() {
         "8 8888        8     `8888888P'     `Y8888P ,88P' 8 8888        8  8 8888 8 8888     `Y8.  `8888888P'     \033[0m\n";
     const char *banners[] = {banner1, banner2, banner3, banner4, banner5};
     srand((unsigned int)time(NULL));
-    printf("%s\n", banners[rand() % (sizeof(banners) / sizeof(banners[0]))]);
+    int count = (int)(sizeof(banners) / sizeof(banners[0]));
+    int r = rand() % count;
+    printf("%s\n", banners[r]);
 }
 
 void pauseADBlock() {
@@ -401,7 +409,7 @@ void resumeADBlock() {
         fclose(backupHostsFile);
         chmod(hostsPath, 0644);
         remove(hostsBackupPath);
-        executeShellCommands("sync", (const char *[]){"sync", NULL});
+        executeShellCommands("sync", (char * const[]){"sync", NULL});
         refreshBlockedCounts();
         putConfig("adblock_switch", 0);
         consoleLog(LOG_LEVEL_INFO, "resumeADBlock", "Protection services have been resumed.");
@@ -412,7 +420,7 @@ void resumeADBlock() {
         // i've come to the conclusion that i should have an boolean for this action
         // to stop running --update-hosts everytime.
         if(!shouldNotForceReMalwackUpdateNextTime) {
-            if(executeShellCommands("/data/adb/modules/Re-Malwack/rmlwk.sh", (const char *[]) {"/data/adb/modules/Re-Malwack/rmlwk.sh", "--update-hosts"}) == 0) shouldNotForceReMalwackUpdateNextTime = true;
+            if(executeShellCommands("/data/adb/modules/Re-Malwack/rmlwk.sh", (char * const[]){"/data/adb/modules/Re-Malwack/rmlwk.sh", "--update-hosts"}) == 0) shouldNotForceReMalwackUpdateNextTime = true;
         }
     }
 }
@@ -490,6 +498,7 @@ void reWriteModuleProp(const char *desk) {
 void killDaemonWhenSignaled(int sig) {
     putConfig("is_daemon_running", NOT_RUNNING_CANT_RUN); 
     putConfig("current_daemon_pid", -1);
+    consoleLog(LOG_LEVEL_DEBUG, "killDaemonWhenSignaled", "sig: %d", sig);
 }
 
 void checkIfModuleExists(void) {
@@ -503,7 +512,7 @@ void appendAlyaProps(void) {
     int defaultPropertyValues[] = {0, 1, -1};
     char *defaultPropertyNames[] = {"is_daemon_running", "enable_daemon", "current_daemon_pid"};    
     consoleLog(LOG_LEVEL_INFO, "appendAlyaProps", "Appending %d properties that might not exist...", sizeof(defaultPropertyNames) / sizeof(defaultPropertyNames[0]));
-    for(int i = 0; i < sizeof(defaultPropertyNames) / sizeof(defaultPropertyNames[0]); i++) {
+    for(size_t i = 0; i < sizeof(defaultPropertyNames) / sizeof(defaultPropertyNames[0]); i++) {
         if(putConfig(defaultPropertyNames[i], defaultPropertyValues[i]) != 0) {
             putConfigAppend(defaultPropertyNames[i], defaultPropertyValues[i], true);
             appendedProps++;

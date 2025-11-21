@@ -23,6 +23,8 @@ bool useStdoutForAllLogs = false;
 bool shouldNotForceReMalwackUpdateNextTime = false;
 char *version = NULL;
 char *versionCode = NULL;
+char *daemonPackageLists = "/data/adb/Re-Malwack/remalwack-package-lists.txt";
+char *previousDaemonPackageLists = "/data/adb/Re-Malwack/previousDaemonList";
 const char *configScriptPath = "/data/adb/Re-Malwack/config.sh";
 const char *MODPATH = "/data/adb/modules/Re-Malwack";
 const char *modulePropFile = "/data/adb/modules/Re-Malwack/module.prop";
@@ -30,15 +32,13 @@ const char *hostsPath = "/data/adb/modules/Re-Malwack/system/etc/hosts";
 const char *hostsBackupPath = "/data/adb/modules/Re-Malwack/hosts.bak";
 const char *daemonLogs = "/sdcard/Android/data/alya.roshidere.lana/logs";
 const char *persistDir = "/data/adb/Re-Malwack";
-const char *daemonPackageLists = "/data/adb/Re-Malwack/remalwack-package-lists.txt";
-const char *previousDaemonPackageLists = "/data/adb/Re-Malwack/previousDaemonList";
 const char *daemonLockFileStuck = "/data/adb/Re-Malwack/.daemon0";
 const char *daemonLockFileSuccess = "/data/adb/Re-Malwack/.daemon1";
 const char *daemonLockFileFailure = "/data/adb/Re-Malwack/.daemon2";
 const char *killDaemon = "/data/adb/Re-Malwack/.daemon3";
 const char *systemHostsPath = "/system/etc/hosts";
 
-int main(int argc, char *argv[]) {
+int main(void) {
     version = grepProp("version", modulePropFile);
     if(!version) abort_instance("main-yuki", "Could not find 'version' in module.prop");
     versionCode = grepProp("versionCode", modulePropFile);
@@ -53,11 +53,11 @@ int main(int argc, char *argv[]) {
     if(getCurrentPackage() != NULL && strcmp(getCurrentPackage(), "com.termux") == 0) {
         consoleLog(LOG_LEVEL_WARN, "main-yuki", "Sorry dear termux user, you CANNOT run this daemon in termux. Termux is not supported by Re-Malwack Daemon.");
         wipePointers();
-        executeShellCommands("exit", (const char*[]) { "exit", "1", NULL });
+        executeShellCommands("exit", (char * const[]){ "exit", "1", NULL });
     }
     // always have a backup of the daemonPackageLists because we need to have to use this
     // backup as a failsafe method when the crap didn't import properly.
-    if(executeShellCommands("su", (const char*[]) {"su", "-c", "cp", "-af", daemonPackageLists, "/data/adb/Re-Malwack/previousDaemonList", NULL}) != 0) abort_instance("main-yuki", "Failed to backup the daemon package lists, please try again!");
+    if(executeShellCommands("su", (char * const[]){"su", "-c", "cp", "-af", daemonPackageLists, "/data/adb/Re-Malwack/previousDaemonList", NULL}) != 0) abort_instance("main-yuki", "Failed to backup the daemon package lists, please try again!");
     consoleLog(LOG_LEVEL_INFO, "main-yuki", "Reading encoded package list...");
     FILE *packageLists = fopen(daemonPackageLists, "rb");
     if(!packageLists) abort_instance("main-yuki", "Failed to open package list file.");
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
             }
             if(access(daemonLockFileSuccess, F_OK) == 0) {
                 consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "A package list update was triggered. Reloading packages...");
-                FILE *packageLists = fopen(daemonPackageLists, "r");
+                packageLists = fopen(daemonPackageLists, "r");
                 if(!packageLists) abort_instance("main-yuki", "Failed to reopen package list file.");
                 i = 0;
                 while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) != NULL && i < MAX_PACKAGES) {
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
             }
             else if(access(daemonLockFileFailure, F_OK) == 0) {
                 consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "An reset was triggered. Reverting to previous state...");
-                if(executeShellCommands("su", (const char*[]) {"su", "-c", "cp", "-af", previousDaemonPackageLists, daemonPackageLists, NULL}) != 0) {
+                if(executeShellCommands("su", (char * const[]){"su", "-c", "cp", "-af", previousDaemonPackageLists, daemonPackageLists, NULL}) != 0) {
                     abort_instance("main-yuki", "Failed to restore the package list, please try again!");
                 }
                 else {
